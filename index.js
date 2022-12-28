@@ -12,12 +12,25 @@ app.use(express.json());
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@cluster0.47nvmfs.mongodb.net/?retryWrites=true&w=majority`;
+// console.log(uri)
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 async function run(){
 
     try{
         const postCollection = client.db('postbookDb').collection('posts');
+
+        app.post('/posts', async (req, res) => {
+            const query = req.body;
+            const post = await postCollection.insertOne(query);
+            res.send(post);
+        });
+
+        app.get('/posts', async(req, res) => {
+            const query = {};
+            const posts = await postCollection.find(query).toArray();
+            res.send(posts);
+        })
     }
     finally{
 
