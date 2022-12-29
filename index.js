@@ -19,17 +19,45 @@ async function run(){
 
     try{
         const postCollection = client.db('postbookDb').collection('posts');
+        const commentCollection = client.db('postbookDb').collection('comments');
 
         app.post('/posts', async (req, res) => {
-            const query = req.body;
-            const post = await postCollection.insertOne(query);
-            res.send(post);
+            const post = req.body;
+            const posts = await postCollection.insertOne(post);
+            res.send(posts);
         });
 
         app.get('/posts', async(req, res) => {
             const query = {};
-            const posts = await postCollection.find(query).toArray();
+            const options = {
+                sort: {
+                    "time" : -1
+                }
+            }
+            const posts = await postCollection.find(query,options).toArray();
             res.send(posts);
+        });
+
+
+        // comment send to db
+        app.post('/comments', async(req, res) => {
+            const comment = req.body;
+            const result = await commentCollection.insertOne(comment);
+            res.send(result);
+        });
+
+
+        // get comment
+        app.get('/comments', async(req, res) => {
+            
+            const query = {};
+            const options = {
+                sort: {
+                    "time" : -1
+                }
+            }
+            const result = await commentCollection.find(query, options).toArray();
+            res.send(result);
         })
     }
     finally{
