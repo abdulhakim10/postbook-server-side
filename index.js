@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 const app = express();
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const port = process.env.PORT || 5000;
 
 // middle wares
@@ -20,6 +20,7 @@ async function run(){
     try{
         const postCollection = client.db('postbookDb').collection('posts');
         const commentCollection = client.db('postbookDb').collection('comments');
+        const likeCollection = client.db('postbookDb').collection('likes');
 
         app.post('/posts', async (req, res) => {
             const post = req.body;
@@ -39,6 +40,23 @@ async function run(){
         });
 
 
+        // like send to db
+        app.post('/likes', async(req, res) => {
+            const likeInfo = req.body;
+            const result = await likeCollection.insertOne(likeInfo);
+            res.send(result);
+        });
+
+
+        // get likes
+        app.get('/likes/:id', async(req, res) => {
+            const id = req.params.id;
+            const query = {postId: id};
+            const result = await likeCollection.find(query).toArray();
+            res.send(result);
+        })
+
+
         // comment send to db
         app.post('/comments', async(req, res) => {
             const comment = req.body;
@@ -48,9 +66,9 @@ async function run(){
 
 
         // get comment
-        app.get('/comments', async(req, res) => {
-            
-            const query = {};
+        app.get('/comments/:id', async(req, res) => {
+            const id = req.params.id;
+            const query = {postId: id};
             const options = {
                 sort: {
                     "time" : -1
